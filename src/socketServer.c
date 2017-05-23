@@ -18,19 +18,7 @@
 
 #include "motd.h"
 
-//#define LISTEN_QSIZE 50
-//#define PORT	6666
-//#define MOTDFILE "./motd.txt"
-//#define MAXMOTDSIZE 9 /*must be bigger than 2. One for the command plus 1 for null*/
-
-
-#define handelError(msg) \
-	do { \
-	syslog(LOG_ERR,"Error : %s \n",strerror(errno)); \
-	perror(msg); exit(EXIT_FAILURE); \
-	} while (0)
-
-
+/* This is a single threaded Message of the day Server program. 
 
 /* This function accepts a sockaddr_in and uses it to fill a string with the IP address and port */
 void getIpAddr(struct sockaddr_in *addr , char *IpAddrPortStr) {
@@ -78,7 +66,6 @@ void openFileRead(char* msg , size_t len) {
 void openFileWrite(char* msg ) {
 
         FILE *fp;
-	syslog( LOG_NOTICE,"Updating new motd %s",msg );
 
         fp = fopen( MOTDFILE,"w+" );
         if ( fp < 0 )
@@ -127,20 +114,17 @@ int main(int argc , char *argv[] )
 	if ( listen( listenFd, LISTEN_QSIZE ) < 0 )
 		handelError(" \n Error : Could not listen \n" );
 	
-	char sendBuff[MAXMOTDSIZE];
-	memset( &sendBuff,'\0', sizeof( sendBuff ) ); 
-	char recvBuff[MAXMOTDSIZE];
-	memset( &recvBuff,'\0', sizeof( recvBuff ) ); 
 
 	while( 1 ) {//main server loop
 	struct sockaddr_in remoteAddr;
 	socklen_t len = sizeof( remoteAddr );
         int conn = accept( listenFd , (struct sockaddr *)&remoteAddr , &len ); 
 
+        char recvBuff[MAXMOTDSIZE];
+	memset( &recvBuff,'\0', sizeof( recvBuff ) ); 
 	int status = read( conn,recvBuff, sizeof(recvBuff) );
-	//int status = read( conn,recvBuff, sizeof(recvBuff)-1 );
 
-	char commandChar = NULL;
+	char commandChar = '\0';
 	commandChar = recvBuff[0];
 		if ( status > 0 ) {//Deal with data
 			
@@ -151,6 +135,8 @@ int main(int argc , char *argv[] )
 
 			syslog( LOG_NOTICE,"%i bytes received", status );
 			if ( commandChar == 'r' ) {//read message
+                            	char sendBuff[MAXMOTDSIZE];
+                                memset( &sendBuff,'\0', sizeof( sendBuff ) ); 
 				openFileRead( sendBuff , sizeof( sendBuff ) );
 	       			write( conn, sendBuff , sizeof( sendBuff ) ); 
 				syslog( LOG_NOTICE,"IP address: %s performed read action message is: %s",ipAddrPort,sendBuff);
@@ -160,15 +146,15 @@ int main(int argc , char *argv[] )
 	       			write( conn, confirmMsg, sizeof(confirmMsg) ); 
 				syslog( LOG_NOTICE,"IP address: %s performed write action message is: %s",ipAddrPort,recvBuff+1);
 			} else if ( commandChar == 'k' ) {//shutdown server
-				syslog( LOG_NOTICE,"IP address: %s performed action: %c ",ipAddrPort,commandChar,recvBuff);
+				syslog( LOG_NOTICE,"IP address: %s performed action: %c ",ipAddrPort,commandChar);
 	       			close( conn );
 				break;
 			} else {
-				syslog( LOG_NOTICE,"IP address: %s performed action: %c command not recognised",ipAddrPort,commandChar,recvBuff);
+				syslog( LOG_NOTICE,"IP address: %s performed action: %c command not recognised",ipAddrPort,commandChar);
 			}
 		} else if ( status == -1 ) { // Error, check errno, take action... 
 			close( conn );
-			handelError( "\n Error : Could not read \n" );
+			syslog( LOG_NOTICE," Could not read \n" );
 		} else if ( status == 0 ) { // Peer closed the socket, finish the close 
        			close( conn );
 		}
