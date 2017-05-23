@@ -1,0 +1,43 @@
+Message of the day server client.
+
+This program has a server and a client component.
+
+To build both parts use 
+
+cmake .
+
+Witin this directory. There will be a motdClient and motdServer
+
+you can enter ./motdServer which will start the server. The logs are sent to syslog on your machine.
+
+
+This is a sample of the logs.
+
+May 10 23:04:05 jcordell-Lenovo-YOGA-700-14ISK MOTD[19688]: Program started by User 1000
+May 10 23:04:10 jcordell-Lenovo-YOGA-700-14ISK MOTD[19688]: 2 bytes received
+May 10 23:04:10 jcordell-Lenovo-YOGA-700-14ISK MOTD[19688]: IP address: 127.0.0.1:42584 performed read action message is: htest
+May 10 23:04:19 jcordell-Lenovo-YOGA-700-14ISK MOTD[19688]: 2 bytes received
+May 10 23:04:19 jcordell-Lenovo-YOGA-700-14ISK MOTD[19688]: IP address: 127.0.0.1:42586 performed write action message is:
+May 10 23:04:27 jcordell-Lenovo-YOGA-700-14ISK MOTD[19688]: 5 bytes received
+May 10 23:04:27 jcordell-Lenovo-YOGA-700-14ISK MOTD[19688]: Updating new motd to god
+May 10 23:04:27 jcordell-Lenovo-YOGA-700-14ISK MOTD[19688]: IP address: 127.0.0.1:42588 performed write action message is: god
+May 10 23:04:36 jcordell-Lenovo-YOGA-700-14ISK MOTD[19688]: 2 bytes received
+May 10 23:04:36 jcordell-Lenovo-YOGA-700-14ISK MOTD[19688]: IP address: 127.0.0.1:42590 performed action: g command not recognised
+May 10 23:06:40 jcordell-Lenovo-YOGA-700-14ISK MOTD[19688]: IP address: 127.0.0.1:42596 performed action: k
+
+Then start the client 
+
+./motdClient 127.0.0.1 
+
+you will then be asked to enter a letter to perform an action 
+
+r 
+this will read the message of the day.
+
+w
+this will write a new message of the day.
+
+k
+will kill the server.
+
+the motd message is stored in the motd.txt file. This file is create automatically.
